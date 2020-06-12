@@ -1,2 +1,2 @@
 # pyControl_task
-Task and config files for pyControl
+House-made task and config files for [pyControl system](https://pycontrol.readthedocs.io/en/latest/)
