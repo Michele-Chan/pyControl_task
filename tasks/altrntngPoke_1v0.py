@@ -7,11 +7,11 @@ Copyright (c) 2020 Yuichi Takeuchi
 '''
 
 from pyControl.utility import *
-import hardware_definition as hw # hw_GoNoGoTask_2v1.py
+import hardware_definition as hw  # hw_GoNoGoTask_2v1.py
 
-#-------------------------------------------------------------------------
+# -------------------------------------------------------------------------
 # States and events.
-#-------------------------------------------------------------------------
+# -------------------------------------------------------------------------
 states = ['init_state',
           'poke1_actv',
           'poke2_actv',
@@ -31,11 +31,12 @@ events = ['poke1_in',
 
 initial_state = 'init_state'
 
-#-------------------------------------------------------------------------
+
+# -------------------------------------------------------------------------
 # Variables.
-#-------------------------------------------------------------------------
+# -------------------------------------------------------------------------
 # Parameters
-v.LED_n  = 4 # Number of LED to use.
+v.LED_n = 4  # Number of LED to use.
 v.session_duration = 1     # Session duration in hour
 v.reward_state_dulation = 2     # reward deliver state duration in second
 v.reward_delivery_duration = 200     # reward delivery duration in ms
@@ -49,37 +50,40 @@ v.poke1_flag = True
 v.n_trial = 0                   # Number of trials initiated
 v.n_reward = 0                  # Number of rewards delivered
 
-#-------------------------------------------------------------------------
-# Non-state machine code.
-#-------------------------------------------------------------------------
 
+# -------------------------------------------------------------------------
+# Non-state machine code.
+# -------------------------------------------------------------------------
 def print_current_state():
     # Print trial information.
-    v.n_trial  +=1
-    v.n_reward +=1
+    v.n_trial += 1
+    v.n_reward += 1
     print('T#:{} R#:{}'.format(v.n_trial, v.n_reward))
+
 
 def flip_flag():
     v.poke1_flag = not(v.poke1_flag)
 
-#-------------------------------------------------------------------------        
+
+# -------------------------------------------------------------------------
 # State machine code.
-#-------------------------------------------------------------------------
+# -------------------------------------------------------------------------
 # Run start and stop behaviours.
 def run_start():
     pyb.LED(v.LED_n).on()
     hw.houselight1.on()
     hw.houselight2.on()
     hw.houselight3.on()
-    set_timer('blinker_off', 1*second) # option: output_event=True
-    set_timer('session_timer', v.session_duration*hour) 
+    set_timer('blinker_off', 1*second)  # option: output_event=True
+    set_timer('session_timer', v.session_duration*hour)
+
 
 def run_end():
     pyb.LED(v.LED_n).off()
     hw.off()
 
-# State & event dependent behaviours.
 
+# State & event dependent behaviours.
 def init_state(event):
     # inital state
     if event == 'entry':
@@ -92,8 +96,9 @@ def init_state(event):
         else:
             goto('poke2_actv')
 
+
 def poke1_actv(event):
-    # wait for poke 
+    # wait for poke
     if event == 'entry':
         if v.PokeLED:
             hw.poke1.LED.on()
@@ -103,6 +108,7 @@ def poke1_actv(event):
         if v.Click:
             hw.speaker.click()
         goto('reward')
+
 
 def poke2_actv(event):
     # wait for poke
@@ -115,6 +121,7 @@ def poke2_actv(event):
         if v.Click:
             hw.speaker.click()
         goto('reward')
+
 
 def reward(event):
     # Reward delivery from sol of poke
@@ -137,17 +144,16 @@ def reward(event):
         print_current_state()
 
 
-#-------------------------------------------------------------------------        
+# -------------------------------------------------------------------------
 # State independent behaviour.
-#-------------------------------------------------------------------------
-
+# -------------------------------------------------------------------------
 def all_states(event):
     # Turn a LED on and off when the corrsponding timer trigger, set timer for next LED on/off.
     if event == 'blinker_on':
         pyb.LED(v.LED_n).on()
-        set_timer('blinker_off', 1*second) # option: output_event=True
+        set_timer('blinker_off', 1*second)  # option: output_event=True
     elif event == 'blinker_off':
         pyb.LED(v.LED_n).off()
-        set_timer('blinker_on' , 1*second)
-    elif event == 'session_timer':  #session timer for framework
+        set_timer('blinker_on', 1*second)
+    elif event == 'session_timer':  # session timer for framework
         stop_framework()

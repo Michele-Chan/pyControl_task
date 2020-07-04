@@ -3,7 +3,7 @@
 # Imports
 from pyControl.utility import *
 from devices import *
-import hardware_definition as hw # hw_GoNoGoTask_2v1.py
+import hardware_definition as hw  # hw_GoNoGoTask_2v1.py
 
 # States and events.
 states = ['LED_on',
@@ -13,24 +13,26 @@ events = ['button_press']
 
 initial_state = 'LED_off'
 
+
 # Variables.
-v.LED_n  = 4 # Number of LED to use.
+v.LED_n = 4  # Number of LED to use.
+
 
 # Define behaviour
-
 def LED_on(event):
     if event == 'entry':
         timed_goto_state('LED_off', 0.5 * second)
         pyb.LED(v.LED_n).on()
-        #hw.speaker.sine(5000)
-        #hw.speaker.noise()
-        #hw.speaker.click()
+        # hw.speaker.sine(5000)
+        # hw.speaker.noise()
+        # hw.speaker.click()
         hw.speaker.click(500)
     elif event == 'exit':
         pyb.LED(v.LED_n).off()
         hw.speaker.off()
     elif event == 'button_press':
         goto_state('LED_off')
+
 
 def LED_off(event):
     if event == 'entry':

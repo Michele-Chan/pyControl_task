@@ -4,11 +4,11 @@ Copyright (c) 2019, 2020 Yuichi Takeuchi
 '''
 
 from pyControl.utility import *
-import hardware_definition as hw # hw_GoNoGoTask_2v1.py
+import hardware_definition as hw  # hw_GoNoGoTask_2v1.py
 
-#-------------------------------------------------------------------------
+# -------------------------------------------------------------------------
 # States and events.
-#-------------------------------------------------------------------------
+# -------------------------------------------------------------------------
 states = ['init_state',
           'intertrial_intrvl',
           'poke1_actv',
@@ -30,13 +30,13 @@ events = ['poke1_in',
 
 initial_state = 'init_state'
 
-#-------------------------------------------------------------------------
+# -------------------------------------------------------------------------
 # Variables.
-#-------------------------------------------------------------------------
+# -------------------------------------------------------------------------
 # Parameters.
-v.LED_n  = 4 # Number of LED to use.
+v.LED_n = 4  # Number of LED to use.
 v.session_duration = 1     # Session duration in hour
-v.intertrial_interval = 1 # intertrial interval in second
+v.intertrial_interval = 1  # intertrial interval in second
 v.reward_taking_dulation = 1     # reward taking duration in second
 v.reward_delivery_latency = 0		# latency for reward delivery in second
 v.reward_delivery_duration = 100         # reward delivery duration in ms
@@ -48,32 +48,35 @@ v.Click = True
 v.n_trials = 0                   # Number of trials recieved.
 v.n_rewards = 0                  # Number of rewards obtained.
 
-#-------------------------------------------------------------------------
-# Non-state machine code.
-#-------------------------------------------------------------------------
 
+# -------------------------------------------------------------------------
+# Non-state machine code.
+# -------------------------------------------------------------------------
 def print_current_state():
     # Print trial information.
-    v.n_trials  +=1
-    v.n_rewards +=1
+    v.n_trials += 1
+    v.n_rewards += 1
     print('T#:{} R#:{}'.format(
            v.n_trials, v.n_rewards))
 
-#-------------------------------------------------------------------------
+
+# -------------------------------------------------------------------------
 # State machine code.
-#-------------------------------------------------------------------------
+# -------------------------------------------------------------------------
 # Run start and stop behaviours.
 def run_start():
     pyb.LED(v.LED_n).on()
     hw.houselight1.on()
     hw.houselight2.on()
     hw.houselight3.on()
-    set_timer('blinker_off', 1*second) # option: output_event=True
-    set_timer('session_timer', v.session_duration*hour) 
+    set_timer('blinker_off', 1*second)  # option: output_event=True
+    set_timer('session_timer', v.session_duration*hour)
+
 
 def run_end():
     pyb.LED(v.LED_n).off()
     hw.off()
+
 
 # State & event dependent behaviours.
 def init_state(event):
@@ -85,6 +88,7 @@ def init_state(event):
     elif event == 'exit':
         pass
 
+
 def intertrial_intrvl(event):
     # inter trial interval
     if event == 'entry':
@@ -92,6 +96,7 @@ def intertrial_intrvl(event):
         timed_goto_state('poke1_actv', v.intertrial_interval*second)
     elif event == 'exit':
         pass
+
 
 def poke1_actv(event):
     # wait for poke1
@@ -105,6 +110,7 @@ def poke1_actv(event):
     elif event == 'exit':
         hw.poke1.LED.off()
 
+
 def poke2_actv(event):
     # wait for poke2
     if event == 'entry':
@@ -116,6 +122,7 @@ def poke2_actv(event):
         goto('reward')
     elif event == 'exit':
         hw.poke2.LED.off()
+
 
 def reward(event):
     # Reward delivery from sol of poke
@@ -131,17 +138,18 @@ def reward(event):
         hw.poke2.SOL.off()
         print_current_state()
 
-#-------------------------------------------------------------------------
-# State independent behaviour.
-#-------------------------------------------------------------------------
 
+# -------------------------------------------------------------------------
+# State independent behaviour.
+# -------------------------------------------------------------------------
 def all_states(event):
-    # Turn a LED on and off when the corrsponding timer trigger, set timer for next LED on/off.
+    # Turn a LED on and off when the corrsponding timer trigger,
+    # set timer for next LED on/off.
     if event == 'blinker_on':
         pyb.LED(v.LED_n).on()
-        set_timer('blinker_off', 1*second) # option: output_event=True
+        set_timer('blinker_off', 1*second)  # option: output_event=True
     elif event == 'blinker_off':
         pyb.LED(v.LED_n).off()
-        set_timer('blinker_on' , 1*second)
-    elif event == 'session_timer':  #session timer for framework
+        set_timer('blinker_on', 1*second)
+    elif event == 'session_timer':  # session timer for framework
         stop_framework()
