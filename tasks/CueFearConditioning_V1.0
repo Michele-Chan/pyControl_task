@@ -1,0 +1,85 @@
+# Cued Fear Conditioning written for pyControl v1.6 with breakout board v1.2
+# MChan (translated from Matlab by YTakeuchi)
+# 25 November 2021
+
+# -------------------------------------------------------------------------
+# States and events.
+# -------------------------------------------------------------------------
+states = ['init_state',
+          'Intertrial_Interval',
+          'Sound_cue']
+
+events = ['Sound_7500',
+          'Sound_2500',
+          'Speaker_off',
+          'button_press', 	# USR button pressed
+          'up',				# USR button released
+          'blinker_on',		# pyboard LED on
+          'blinker_off', 	# pyboard LED off
+          'rsync']
+
+initial_state = 'init_state'
+
+# -------------------------------------------------------------------------
+# Variables.
+# -------------------------------------------------------------------------
+# Parameters.
+v.ITIduration = add(20, mul(100,random.random()))*second #ITI in seconds
+v.speaker.activeT = 30*second #Time speaker is on
+v.speaker.inactiveT = 30*second #Time speaker is off
+v.trialnumber = 5
+v.speaker = True
+
+#Variables
+v.n_trials = 0
+
+# -------------------------------------------------------------------------
+# Non-state machine code.
+# -------------------------------------------------------------------------
+def print_current_state():
+    # Print trial information.
+    v.n_trials += 1
+    print('T#:{}'.format(v.n_trials))
+
+#--------------------------------------------------------------------------
+# State machine code
+#--------------------------------------------------------------------------
+
+def init_state(event):
+    # initial state
+    if event == 'entry':
+      print('Initialised')
+    elif event == 'button_press':
+      goto('Intertrial_Interval')
+    elif event == 'exit':
+      pass
+
+def Intertrial_Interval(event):
+  # inter trial interval
+  if event == 'entry':
+    timed_goto_state('Sound_cue', v.ITIduration)
+  elif event == 'exit':
+    pass
+
+def Sound_cue(event):
+  if event == 'entry':
+    hw.speaker.sine(7500)
+    set_timer('Speaker_off', v.speaker.activeT)
+  elif event = 'Speaker_off':
+    hw.speaker.off()
+    set_timer('Sound_2500', v.speaker.inactiveT)
+  elif event = 'Sound_2500':
+    hw.speaker.sine(2500)
+    set_timer(Speaker_off, v.speaker.activeT)
+  elif event = 'Speaker_off':
+    hw.speaker.off()
+    timed_goto_state('Intertrial_Interval', v.speaker.inactiveT)
+  elif event == 'exit':
+    print_current_state()
+
+# -------------------------------------------------------------------------
+# State independent behaviour.
+# -------------------------------------------------------------------------
+def all_states(event):
+  if v.n_trials >= v.trialnumber:
+    stop_framework()
